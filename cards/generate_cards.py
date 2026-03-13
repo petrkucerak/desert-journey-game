@@ -190,17 +190,26 @@ def draw_front_card(
         except Exception:
             pass
 
-    # Title
+    # Title (wrap and shrink if needed)
     title_font_size = 12
+    title_lines = _wrap_text(card.title, inner_w, title_font_size, font_name)
+    if len(title_lines) > 2:
+        # Reduce font size if title spans too many lines
+        title_font_size = 10
+        title_lines = _wrap_text(card.title, inner_w, title_font_size, font_name)
+
     c.setFont(font_name, title_font_size)
     title_y = y + h - padding - icon_box_h - 4 * mm
-    c.drawString(inner_x, title_y, card.title)
+    line_spacing = (title_font_size * 0.6) * mm
+    for line in title_lines:
+        c.drawString(inner_x, title_y, line)
+        title_y -= line_spacing
 
     # Description / note
     note_font_size = 9
     c.setFont(font_name, note_font_size)
     text_lines = _wrap_text(card.note, inner_w, note_font_size, font_name)
-    text_y = title_y - 6 * mm
+    text_y = title_y - 3 * mm
     for line in text_lines:
         if text_y < y + padding + 18 * mm:
             break

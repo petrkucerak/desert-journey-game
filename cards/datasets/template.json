@@ -115,6 +115,10 @@
             {
                "title": "Mluvte všichni pouze se samohlásakmi A.",
                "note": "Toto pravidlo platí, dokud se neotočí další kartička typu event."
+            },
+            {
+               "title": "Mluvte všichni pouze se samohlásakmi A.",
+               "note": "Toto pravidlo platí, dokud se neotočí další kartička typu event."
             }
          ]
       }
