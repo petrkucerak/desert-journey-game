@@ -107,7 +107,8 @@ def load_cards_from_dataset(dataset_path: Path) -> Tuple[str, str, str, List[Car
             candidate = base_dir / icon_value
             if not candidate.exists():
                 # Support dataset paths that are relative to repository root
-                candidate = dataset_path.parent.parent / icon_value
+                repo_root = dataset_path.parents[2] if len(dataset_path.parents) > 2 else dataset_path.parent
+                candidate = repo_root / icon_value
             icon_path = candidate.resolve() if candidate.exists() else None
 
         for card in category.get("cards", []):
@@ -164,6 +165,7 @@ def draw_front_card(
     footer_text: str,
     set_name: str,
     set_version: str,
+    icon_size_mm: float = 10.0,
 ) -> None:
     """Draw a single card (front side) into the given rectangle."""
     # Card padding
@@ -178,7 +180,7 @@ def draw_front_card(
     c.rect(x, y, w, h, stroke=1, fill=0)
 
     # Icon area
-    icon_box_h = 30 * mm
+    icon_box_h = icon_size_mm * mm
     if card.icon_path and svg2rlg is not None and renderPDF is not None:
         try:
             drawing = svg2rlg(str(card.icon_path))
@@ -186,7 +188,7 @@ def draw_front_card(
                 scale = min(inner_w / drawing.width, icon_box_h / drawing.height)
                 drawing.width *= scale
                 drawing.height *= scale
-                renderPDF.draw(drawing, c, inner_x + (inner_w - drawing.width) / 2, y + h - padding - drawing.height)
+                renderPDF.draw(drawing, c, inner_x + (inner_w - drawing.width) / 2, y + h - padding - drawing.height + 10)
         except Exception:
             pass
 
@@ -259,7 +261,7 @@ def draw_back_card(c: Canvas, x: float, y: float, w: float, h: float, number: in
     c.drawString(x + (w - text_w) / 2, y + (h - num_font_size) / 2, text)
 
 
-def build_pdf(output_path: Path, set_name: str, set_version: str, footer_text: str, cards: List[CardData]) -> None:
+def build_pdf(output_path: Path, set_name: str, set_version: str, footer_text: str, cards: List[CardData], icon_size_mm: float = 30.0) -> None:
     """Build PDF with front/back pages."""
     page_size = landscape(A4)
     page_w, page_h = page_size
@@ -292,7 +294,7 @@ def build_pdf(output_path: Path, set_name: str, set_version: str, footer_text: s
         y = page_h - (row + 1) * card_h
 
         _draw_crop_marks(c, x, y, card_w, card_h)
-        draw_front_card(c, x, y, card_w, card_h, card, font_name, footer_text, set_name, set_version)
+        draw_front_card(c, x, y, card_w, card_h, card, font_name, footer_text, set_name, set_version, icon_size_mm)
 
     c.showPage()
 
@@ -328,6 +330,12 @@ def main(argv: Optional[List[str]] = None) -> int:
         default=None,
         help="Optional random seed to make number distribution deterministic.",
     )
+    parser.add_argument(
+        "--icon-size",
+        type=float,
+        default=30.0,
+        help="Icon size in mm (default: 30).",
+    )
 
     args = parser.parse_args(argv)
 
@@ -349,7 +357,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         output_path = out_dir / f"{base}_cards.pdf"
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    build_pdf(output_path, set_name, set_version, footer_text, cards)
+    build_pdf(output_path, set_name, set_version, footer_text, cards, args.icon_size)
 
     print(f"Generated: {output_path}")
     return 0

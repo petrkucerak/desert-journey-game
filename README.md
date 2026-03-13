@@ -52,11 +52,19 @@ Pro generování kartiček je v repozitáři Python skript `cards/generate_cards
 2. Nainstalujte požadované balíčky:
    ```bash
    python -m pip install -r cards/requirements.txt
-   ```
-3. Spusťte generátor:
+   ```   Nebo použijte virtual environment:
+   ```bash
+   python -m venv venv
+   venv\Scripts\activate  # na Windows
+   pip install -r cards/requirements.txt
+   ```3. Spusťte generátor:
    ```bash
    python cards/generate_cards.py cards/datasets/template.json
    ```
+   Volitelné parametry:
+   - `--icon-size 20`: Nastavte velikost ikon v mm (výchozí 30).
+   - `--seed 123`: Nastavte seed pro deterministické rozložení čísel na zadní straně.
+
    Výsledkem bude soubor `cards/datasets/template_cards.pdf`.
 
 ### GitHub Actions
